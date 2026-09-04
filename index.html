@@ -181,7 +181,7 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
       <h3>この画面は「覗き窓」です</h3>
       <p>御霊は<strong>画面に留まります</strong>。端末を動かすと一緒に付いてきます——机を認識してそこへ固定しているのではなく、カメラの絵に重ねているだけだからです。<strong>向けて・指で合わせて・撮る</strong>ための窓だと思ってください。</p>
       <h3>机に置く（AR）</h3>
-      <p><strong>本当にその場へ固定したいときはこちら。</strong>iPhone / iPad は AR Quick Look、Android は Scene Viewer という<strong>端末に元から入っている機能</strong>へ渡します。そちらは平面を探して、歩き回っても同じ場所に立ち続けます。</p>
+      <p><strong>本当にその場へ固定したいときはこちら。</strong>iPhone / iPad は <strong>ARKit</strong>（AR Quick Look）、Android は Scene Viewer という<strong>端末に元から入っている本物のAR</strong>へ渡します。平面を探して、歩き回っても同じ場所に立ち続けます。ブラウザにできる真似ではないので、いちばん正確な道を借りています。</p>
       <p class="komakai"><strong>開いたら、画面の上の「AR」に切り替えてください。</strong>最初は「オブジェクト」（白い部屋で眺める表示）になっていることがあります。<br>
       向こうはOSの画面なので、しぐさの切り替えはできません。丈は選んだままです。</p>
       <h3>うまくいかないとき</h3>
@@ -201,11 +201,14 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
 
     <div id="shirube" role="dialog" aria-modal="true" aria-labelledby="shirube-h">
       <div class="fumi">
-        <h3 id="shirube-h">端末のARに渡します</h3>
+        <h3 id="shirube-h">iPhone の本物のARを借ります</h3>
+        <p>机や床を見つけて置く仕事は、<strong>iPhone に入っている ARKit</strong> に任せます。
+        ブラウザにできる真似ではないので、<strong>いちばん正確に置ける道</strong>を借りにいきます。</p>
         <p>開いた画面の上に <span class="kae">オブジェクト</span> と <span class="kae">AR</span> の切り替えがあります。
-        <strong>「AR」を選ぶと</strong>カメラが開いて、床や机に本当に置けます。</p>
-        <p class="komakai">丈は選んだまま（いま <span id="shirube-take">20</span>cm）で置かれます。<br>
-        向こうはOSの画面なので、しぐさの切り替えはできません。戻るときは左上の「完了」。</p>
+        <strong>「AR」を選ぶと</strong>カメラが開いて、歩き回っても同じ場所に立ち続けます。</p>
+        <p class="komakai">丈は選んだまま（いま <span id="shirube-take">20</span>cm）。<br>
+        下に「よりしろ」の帯が出るので、<strong>「よりしろに戻る」</strong>でここへ帰れます（左上の「完了」でも戻れます）。<br>
+        向こうはOSの画面なので、しぐさの切り替えはできません。戻るとカメラは開き直しになります。</p>
         <div class="retsu">
           <button class="oshi kin hiroi" id="shirube-go">ARで開く</button>
           <button class="oshi" id="shirube-no">やめる</button>
@@ -1466,6 +1469,15 @@ async function toriyoseru(m){
   return b;
 }
 
+function obi(m){                      // AR Quick Look の下に出る帯（Appleの仕組み）
+  const e = encodeURIComponent;
+  return "#checkoutTitle=" + e("よりしろ")
+       + "&checkoutSubtitle=" + e(m.name + " ／ 月蝕綺譚 二次創作")
+       + "&price=" + e("丈 " + TAKE[takeIdx] + "cm")
+       + "&callToAction=" + e("よりしろに戻る")
+       + "&canonicalWebPageURL=" + e(location.origin + location.pathname);
+}
+
 async function yobu(m, shizuka){
   ima = m;
   $("#na-n").textContent = m.name;
@@ -1478,7 +1490,7 @@ async function yobu(m, shizuka){
     const b = takeWoAteru(moto, (TAKE[takeIdx] / 100) / MOTO_TAKE);
     if(urlIma) URL.revokeObjectURL(urlIma);
     urlIma = URL.createObjectURL(new Blob([b], {type:"model/gltf-binary"}));
-    mv.src = urlIma;
+    mv.src = urlIma + obi(m);      // # は Quick Look へ写される（模型の読み込みには影響しない）
     mv.setAttribute("animation-name", "idle");
     document.querySelectorAll("[data-shigusa]").forEach(b2 => {
       const on = b2.dataset.shigusa === "idle";
@@ -1601,15 +1613,23 @@ $("#cam-btn").addEventListener("click", () => { nagare ? hanasu() : hiraku(); })
    黙って止める（約束が返らないまま固まる）ので、次の一手は必ず人の指に委ねる。 */
 document.addEventListener("visibilitychange", () => {
   if(document.hidden){ if(nagare){ modosu = true; hanasu(); } }
-  else if(modosu){ modosu = false; tsugeru("カメラは一度手放しました。「カメラを許す」でまた開けます", 4200); }
+  else if(modosu){ modosu = false; tsugeru("おかえりなさい。カメラは手放したので、「カメラを許す」でまた開けます", 4600); }
 });
 window.addEventListener("pagehide", () => { if(nagare) hanasu(); });
 
 /* ══ 机に置く（端末のAR） ══ */
 async function watasu(){
   if(nagare){ modosu = true; hanasu(); }      // 向こうもカメラを使うので、先に手放す
+  const btn = $("#ar-btn"), moto = btn.textContent;
+  btn.disabled = true; btn.textContent = "焼いています";
+  tsugeru("姿を焼いています…（数秒かかります）", 20000);   // 実行時にUSDZへ変換している
   try{ await mv.activateAR(); }
   catch(e){ tsugeru("ARを開けません：" + e.name, 4000); }
+  finally{
+    btn.disabled = false; btn.textContent = moto;
+    const sh = $("#shirase");
+    if(sh.textContent.indexOf("焼いて") === 0) sh.classList.remove("on");
+  }
 }
 $("#ar-btn").addEventListener("click", () => {
   if(!mv.canActivateAR){ tsugeru("この端末では「机に置く」が使えません", 4000); return; }
@@ -1674,7 +1694,7 @@ document.addEventListener("touchend", e => {
 }, {passive:false});
 
 /* ══ 検め ══ */
-const HAN = "2026-09-04 23:00 (e7273d0)";
+const HAN = "2026-09-05 06:56 (c09b859)";
 $("#han").textContent = HAN;
 (async () => {
   try{
