@@ -102,7 +102,14 @@ JSON区画は4バイト境界まで空白（`0x20`）で、BIN区画は `0x00` �
 - **試し直す**: `getUserMedia` は3段の制約で順に試し、あいだに500ms待つ
   （`environment`＋1920 → `environment` のみ → `video:true`）。
   `NotAllowedError` だけは待っても変わらないので即座に諦める
-- **言い分を分ける**: `NotAllowedError` は「設定から許可を」・
+- **人の指からしか呼ばない**: iOS はタップ以外からのカメラ要求を黙って止め、
+  `getUserMedia` の約束が**返ってこない**。裏から戻ったときに自動で開き直してはいけない
+  （告げるだけにして、次の一手は人に委ねる）
+- **8秒の見切り**（`machi()`）: 約束が返らなくても釦を元に戻す。`TimeoutError` は
+  `NotAllowedError` と同じ扱い
+- **拒まれたら札を出す**（`#kobami`）: 「ぁあ」→ Webサイトの設定 → カメラ → 許可 →
+  読み込み直す の4手。**手順は告げ札（トースト）では渡せない**
+- **言い分を分ける**: `NotAllowedError`／`TimeoutError` は札・
   `AbortError`/`NotReadableError` は「**他で使われています。別のタブやアプリを閉じて**」。
   この2つは原因が別なので、同じ文言にしない
 

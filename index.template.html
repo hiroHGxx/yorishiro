@@ -113,6 +113,21 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
   color:var(--sub); font-family:var(--gothic); font-size:12px; text-decoration:underline;
   cursor:pointer; padding:6px; min-height:32px}
 
+#kobami{position:absolute; inset:0; background:rgba(19,19,32,.94); display:none;
+  align-items:center; justify-content:center; padding:18px; backdrop-filter:blur(8px); overflow-y:auto}
+#kobami.on{display:flex}
+#kobami .fumi{background:var(--yoi-hi); border:1px solid rgba(224,86,47,.42); border-radius:10px;
+  padding:18px 18px 16px; max-width:360px; width:100%}
+#kobami h3{font-family:var(--mincho); font-size:17px; font-weight:700; letter-spacing:.08em;
+  color:var(--shokko); margin:0 0 10px}
+#kobami p{font-size:13px; line-height:1.8; margin:0 0 10px; color:var(--geppaku)}
+#kobami ol{margin:0 0 10px; padding-left:1.25em}
+#kobami li{font-size:13px; line-height:1.85; color:var(--geppaku); margin-bottom:3px}
+#kobami .kae{display:inline-block; font-weight:700; color:var(--kin-hi);
+  border:1px solid rgba(217,169,76,.5); border-radius:4px; padding:1px 7px; margin:0 1px}
+#kobami .komakai{font-size:12px; color:var(--sub); line-height:1.7}
+#kobami .retsu{padding:0; margin-top:14px}
+
 /* ── 撮った一枚 ── */
 #ichimai{position:absolute; inset:0; background:rgba(19,19,32,.97); display:none;
   flex-direction:column; align-items:center; justify-content:center; gap:13px; padding:16px}
@@ -192,6 +207,28 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
           <button class="oshi" id="shirube-no">やめる</button>
         </div>
         <button class="yameru" id="shirube-mou">次からは出さずに、すぐARへ渡す</button>
+      </div>
+    </div>
+
+    <div id="kobami" role="dialog" aria-modal="true" aria-labelledby="kobami-h">
+      <div class="fumi">
+        <h3 id="kobami-h">カメラが拒まれています</h3>
+        <p>この端末では、いまこの頁のカメラが<strong>「拒否」</strong>になっています。
+        <strong>一度許すと、次からは訊かれません。</strong></p>
+        <ol>
+          <li>アドレス欄の左にある <span class="kae">ぁあ</span> を押す</li>
+          <li><span class="kae">Webサイトの設定</span> を開く</li>
+          <li><span class="kae">カメラ</span> を <span class="kae">許可</span> にする</li>
+          <li>「完了」を押して、下の <strong>読み込み直す</strong></li>
+        </ol>
+        <p class="komakai">「ぁあ」に出てこないときは、<strong>設定アプリ → Safari → カメラ</strong> を
+        「確認」または「許可」に。<br>
+        カメラを使わなくても、御霊を眺める・向きを変える・丈を変える・<strong>机に置く</strong>（AR）は
+        そのまま使えます。</p>
+        <div class="retsu">
+          <button class="oshi kin hiroi" id="kobami-yomi">読み込み直す</button>
+          <button class="oshi" id="kobami-toji">閉じる</button>
+        </div>
       </div>
     </div>
 
@@ -372,13 +409,24 @@ const SEIYAKU = [
   {video:true, audio:false},
 ];
 
+function machi(yakusoku, ms){          // 返らない約束に見切りをつける
+  let t;
+  return Promise.race([
+    yakusoku.finally(() => clearTimeout(t)),
+    new Promise((_, rej) => { t = setTimeout(() => {
+      const e = new Error("返事が無い"); e.name = "TimeoutError"; rej(e);
+    }, ms); }),
+  ]);
+}
+
 async function tsukamu(){
   let saigo = null;
   for(let i = 0; i < SEIYAKU.length; i++){
-    try{ return await navigator.mediaDevices.getUserMedia(SEIYAKU[i]); }
+    try{ return await machi(navigator.mediaDevices.getUserMedia(SEIYAKU[i]), 8000); }
     catch(e){
       saigo = e;
-      if(e.name === "NotAllowedError") throw e;       // 許しの問題は待っても変わらない
+      // 許し・問いかけが出ない、の2つは待っても変わらない
+      if(e.name === "NotAllowedError" || e.name === "TimeoutError") throw e;
       await new Promise(r => setTimeout(r, 500));     // 掴まれている間は待って試し直す
     }
   }
@@ -410,22 +458,27 @@ async function hiraku(shizuka){
     return true;
   }catch(e){
     nagare = null; btn.textContent = "カメラを許す";
-    tsugeru(
-      e.name === "NotAllowedError"
-        ? "カメラが許されませんでした。アドレス欄の「ぁあ」→ Webサイトの設定 → カメラ を「許可」に"
-      : (e.name === "AbortError" || e.name === "NotReadableError")
+    if(e.name === "NotAllowedError" || e.name === "TimeoutError"){ kobamare(); }
+    else tsugeru(
+      (e.name === "AbortError" || e.name === "NotReadableError")
         ? "カメラが他で使われています。この頁の別のタブ／カメラを使うアプリを閉じて、もう一度押してください"
         : ("カメラを開けません：" + e.name), 6000);
     return false;
   }
 }
 
+function kobamare(){ $("#kobami").classList.add("on"); }
+$("#kobami-toji").addEventListener("click", () => $("#kobami").classList.remove("on"));
+$("#kobami-yomi").addEventListener("click", () => location.reload());
+
 $("#cam-btn").addEventListener("click", () => { nagare ? hanasu() : hiraku(); });
 
-/* 裏に回る・頁を離れるときは必ず手放す（戻ったら開き直す） */
+/* 裏に回る・頁を離れるときは必ず手放す。
+   **戻っても自分から開き直さない**——iOS はタップ以外から呼んだカメラ要求を
+   黙って止める（約束が返らないまま固まる）ので、次の一手は必ず人の指に委ねる。 */
 document.addEventListener("visibilitychange", () => {
   if(document.hidden){ if(nagare){ modosu = true; hanasu(); } }
-  else if(modosu){ modosu = false; setTimeout(() => hiraku(true), 350); }
+  else if(modosu){ modosu = false; tsugeru("カメラは一度手放しました。「カメラを許す」でまた開けます", 4200); }
 });
 window.addEventListener("pagehide", () => { if(nagare) hanasu(); });
 
