@@ -96,6 +96,23 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
 #tebiki a{color:var(--kin); text-decoration:none; border-bottom:1px solid rgba(217,169,76,.4)}
 #tebiki footer{margin-top:16px; padding-top:12px; border-top:1px solid rgba(157,147,181,.18); font-size:12px; color:var(--sub); line-height:1.7}
 
+/* ── 道しるべ（ARへ渡す前） ── */
+#shirube{position:absolute; inset:0; background:rgba(19,19,32,.94); display:none;
+  align-items:center; justify-content:center; padding:18px; backdrop-filter:blur(8px)}
+#shirube.on{display:flex}
+#shirube .fumi{background:var(--yoi-hi); border:1px solid rgba(217,169,76,.34); border-radius:10px;
+  padding:18px 18px 16px; max-width:360px; width:100%}
+#shirube h3{font-family:var(--mincho); font-size:17px; font-weight:700; letter-spacing:.08em;
+  color:var(--kin-hi); margin:0 0 10px}
+#shirube p{font-size:13px; line-height:1.8; margin:0 0 10px; color:var(--geppaku)}
+#shirube .kae{display:inline-block; font-weight:700; color:var(--kin-hi);
+  border:1px solid rgba(217,169,76,.5); border-radius:4px; padding:1px 7px; margin:0 1px}
+#shirube .komakai{font-size:12px; color:var(--sub); line-height:1.7}
+#shirube .retsu{padding:0; margin-top:14px}
+#shirube .yameru{display:block; width:100%; margin-top:11px; background:none; border:0;
+  color:var(--sub); font-family:var(--gothic); font-size:12px; text-decoration:underline;
+  cursor:pointer; padding:6px; min-height:32px}
+
 /* ── 撮った一枚 ── */
 #ichimai{position:absolute; inset:0; background:rgba(19,19,32,.97); display:none;
   flex-direction:column; align-items:center; justify-content:center; gap:13px; padding:16px}
@@ -146,8 +163,12 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
       </ol>
       <h3>丈（たけ）</h3>
       <p>置物の背丈を 15 / 20 / 30cm から選べます。<strong>この丈は「机に置く」（AR）でもそのまま使われます</strong>——端末のARは実寸で置くので、選んだ背丈のまま現れます。</p>
+      <h3>この画面は「覗き窓」です</h3>
+      <p>御霊は<strong>画面に留まります</strong>。端末を動かすと一緒に付いてきます——机を認識してそこへ固定しているのではなく、カメラの絵に重ねているだけだからです。<strong>向けて・指で合わせて・撮る</strong>ための窓だと思ってください。</p>
       <h3>机に置く（AR）</h3>
-      <p class="komakai">iPhone / iPad は AR Quick Look、Android は Scene Viewer という<strong>端末に元から入っている機能</strong>へ渡します。そちらは平面を探して本当に床や机へ置けますが、この道具の画面ではなくなるので、しぐさの切り替えはできません。</p>
+      <p><strong>本当にその場へ固定したいときはこちら。</strong>iPhone / iPad は AR Quick Look、Android は Scene Viewer という<strong>端末に元から入っている機能</strong>へ渡します。そちらは平面を探して、歩き回っても同じ場所に立ち続けます。</p>
+      <p class="komakai"><strong>開いたら、画面の上の「AR」に切り替えてください。</strong>最初は「オブジェクト」（白い部屋で眺める表示）になっていることがあります。<br>
+      向こうはOSの画面なので、しぐさの切り替えはできません。丈は選んだままです。</p>
       <h3>うまくいかないとき</h3>
       <p class="komakai">カメラが始まらないときは、ブラウザの設定でこのサイトのカメラを「許可」にしてください。Safari なら アドレス欄の「ぁあ」→ Webサイトの設定 → カメラ。<br>
       御霊が出てこないときは、素材蔵（<code>kura.vibe.co.jp</code>）に届いていません。通信を確かめてもう一度押してください。</p>
@@ -156,6 +177,21 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
         御霊の3Dモデルは素材蔵 <a href="https://kura.vibe.co.jp/" target="_blank" rel="noopener">kura.vibe.co.jp</a> から実行時に読み込んでいます（<strong>3Dフィギュア＝シャックさん作</strong>）。この道具は原本を1つも持ちません。<br>
         <a href="https://vibe.co.jp/luna-occulta/fanworks" target="_blank" rel="noopener">二次創作ガイドライン</a>の範囲で制作。
       </footer>
+    </div>
+
+    <div id="shirube" role="dialog" aria-modal="true" aria-labelledby="shirube-h">
+      <div class="fumi">
+        <h3 id="shirube-h">端末のARに渡します</h3>
+        <p>開いた画面の上に <span class="kae">オブジェクト</span> と <span class="kae">AR</span> の切り替えがあります。
+        <strong>「AR」を選ぶと</strong>カメラが開いて、床や机に本当に置けます。</p>
+        <p class="komakai">丈は選んだまま（いま <span id="shirube-take">20</span>cm）で置かれます。<br>
+        向こうはOSの画面なので、しぐさの切り替えはできません。戻るときは左上の「完了」。</p>
+        <div class="retsu">
+          <button class="oshi kin hiroi" id="shirube-go">ARで開く</button>
+          <button class="oshi" id="shirube-no">やめる</button>
+        </div>
+        <button class="yameru" id="shirube-mou">次からは出さずに、すぐARへ渡す</button>
+      </div>
     </div>
 
     <div id="ichimai">
@@ -1466,7 +1502,7 @@ $("#cam-btn").addEventListener("click", async () => {
     cam.classList.add("on"); yami.classList.add("off");
     btn.textContent = "カメラを閉じる"; btn.classList.remove("kin");
     $("#toru").disabled = false;
-    tsugeru("机や棚に向けてください");
+    tsugeru("机や棚に向けて、指で合わせて撮ってください", 4200);
   }catch(e){
     nagare = null; btn.textContent = "カメラを許す";
     tsugeru(e.name === "NotAllowedError" ? "カメラが許されませんでした。ブラウザの設定から許可してください" : ("カメラを開けません：" + e.name), 5200);
@@ -1474,10 +1510,20 @@ $("#cam-btn").addEventListener("click", async () => {
 });
 
 /* ══ 机に置く（端末のAR） ══ */
-$("#ar-btn").addEventListener("click", async () => {
-  if(!mv.canActivateAR){ tsugeru("この端末では「机に置く」が使えません", 4000); return; }
+async function watasu(){
   try{ await mv.activateAR(); }
   catch(e){ tsugeru("ARを開けません：" + e.name, 4000); }
+}
+$("#ar-btn").addEventListener("click", () => {
+  if(!mv.canActivateAR){ tsugeru("この端末では「机に置く」が使えません", 4000); return; }
+  if(omoidasu("shirube") === "sumi"){ watasu(); return; }
+  $("#shirube-take").textContent = String(TAKE[takeIdx]);
+  $("#shirube").classList.add("on");
+});
+$("#shirube-go").addEventListener("click", () => { $("#shirube").classList.remove("on"); watasu(); });
+$("#shirube-no").addEventListener("click", () => $("#shirube").classList.remove("on"));
+$("#shirube-mou").addEventListener("click", () => {
+  oboeru("shirube", "sumi"); $("#shirube").classList.remove("on"); watasu();
 });
 
 /* ══ 一枚撮る ══ */
