@@ -170,7 +170,8 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
       <p class="komakai"><strong>開いたら、画面の上の「AR」に切り替えてください。</strong>最初は「オブジェクト」（白い部屋で眺める表示）になっていることがあります。<br>
       向こうはOSの画面なので、しぐさの切り替えはできません。丈は選んだままです。</p>
       <h3>うまくいかないとき</h3>
-      <p class="komakai">カメラが始まらないときは、ブラウザの設定でこのサイトのカメラを「許可」にしてください。Safari なら アドレス欄の「ぁあ」→ Webサイトの設定 → カメラ。<br>
+      <p class="komakai"><strong>「カメラが他で使われています」と出たとき</strong>——iPhone は撮影の口をひとつしか開けません。この頁を開いた<strong>別のタブ</strong>や、カメラを使うアプリを閉じてから、もう一度押してください。<br>
+      カメラが始まらないときは、ブラウザの設定でこのサイトのカメラを「許可」にしてください。Safari なら アドレス欄の「ぁあ」→ Webサイトの設定 → カメラ。<br>
       御霊が出てこないときは、素材蔵（<code>kura.vibe.co.jp</code>）に届いていません。通信を確かめてもう一度押してください。</p>
       <footer>
         『月蝕綺譚 -Luna Occulta-』(Studio VIBE / CryptoNinja 外伝) の<strong>二次創作</strong>です。<strong>公式とは関係ありません。</strong><br>
@@ -360,38 +361,77 @@ $("#take").addEventListener("click", () => {
   tsugeru("丈 " + TAKE[takeIdx] + "cm");
 });
 
-/* ══ カメラ ══ */
-let nagare = null;
-$("#cam-btn").addEventListener("click", async () => {
-  const btn = $("#cam-btn");
-  if(nagare){
-    nagare.getTracks().forEach(t => t.stop()); nagare = null;
-    cam.classList.remove("on"); yami.classList.remove("off");
-    btn.textContent = "カメラを許す"; btn.classList.add("kin");
-    $("#toru").disabled = true;
-    return;
+/* ══ カメラ ══
+   iOS は撮影の口をひとつしか開けない。頁を離れるとき（ARへ渡す・裏に回る）に
+   必ず手放さないと、戻ってきたときに自分で自分を塞いで AbortError になる。 */
+let nagare = null, modosu = false;
+
+const SEIYAKU = [
+  {video:{facingMode:{ideal:"environment"}, width:{ideal:1920}, height:{ideal:1080}}, audio:false},
+  {video:{facingMode:{ideal:"environment"}}, audio:false},
+  {video:true, audio:false},
+];
+
+async function tsukamu(){
+  let saigo = null;
+  for(let i = 0; i < SEIYAKU.length; i++){
+    try{ return await navigator.mediaDevices.getUserMedia(SEIYAKU[i]); }
+    catch(e){
+      saigo = e;
+      if(e.name === "NotAllowedError") throw e;       // 許しの問題は待っても変わらない
+      await new Promise(r => setTimeout(r, 500));     // 掴まれている間は待って試し直す
+    }
   }
+  throw saigo;
+}
+
+function hanasu(){                                    // 撮影の口を手放す
+  if(nagare){ nagare.getTracks().forEach(t => t.stop()); nagare = null; }
+  try{ cam.pause(); }catch(e){}
+  cam.srcObject = null;
+  cam.classList.remove("on"); yami.classList.remove("off");
+  $("#cam-btn").textContent = "カメラを許す"; $("#cam-btn").classList.add("kin");
+  $("#toru").disabled = true;
+}
+
+async function hiraku(shizuka){
+  const btn = $("#cam-btn");
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    tsugeru("この環境ではカメラを開けません（https で開いてください）", 5200); return;
+    tsugeru("この環境ではカメラを開けません（https で開いてください）", 5200); return false;
   }
   btn.textContent = "問いかけ中…";
   try{
-    nagare = await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:"environment"}, width:{ideal:1920}, height:{ideal:1080}}, audio:false
-    });
+    nagare = await tsukamu();
     cam.srcObject = nagare; await cam.play();
     cam.classList.add("on"); yami.classList.add("off");
     btn.textContent = "カメラを閉じる"; btn.classList.remove("kin");
     $("#toru").disabled = false;
-    tsugeru("机や棚に向けて、指で合わせて撮ってください", 4200);
+    if(!shizuka) tsugeru("机や棚に向けて、指で合わせて撮ってください", 4200);
+    return true;
   }catch(e){
     nagare = null; btn.textContent = "カメラを許す";
-    tsugeru(e.name === "NotAllowedError" ? "カメラが許されませんでした。ブラウザの設定から許可してください" : ("カメラを開けません：" + e.name), 5200);
+    tsugeru(
+      e.name === "NotAllowedError"
+        ? "カメラが許されませんでした。アドレス欄の「ぁあ」→ Webサイトの設定 → カメラ を「許可」に"
+      : (e.name === "AbortError" || e.name === "NotReadableError")
+        ? "カメラが他で使われています。この頁の別のタブ／カメラを使うアプリを閉じて、もう一度押してください"
+        : ("カメラを開けません：" + e.name), 6000);
+    return false;
   }
+}
+
+$("#cam-btn").addEventListener("click", () => { nagare ? hanasu() : hiraku(); });
+
+/* 裏に回る・頁を離れるときは必ず手放す（戻ったら開き直す） */
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden){ if(nagare){ modosu = true; hanasu(); } }
+  else if(modosu){ modosu = false; setTimeout(() => hiraku(true), 350); }
 });
+window.addEventListener("pagehide", () => { if(nagare) hanasu(); });
 
 /* ══ 机に置く（端末のAR） ══ */
 async function watasu(){
+  if(nagare){ modosu = true; hanasu(); }      // 向こうもカメラを使うので、先に手放す
   try{ await mv.activateAR(); }
   catch(e){ tsugeru("ARを開けません：" + e.name, 4000); }
 }
