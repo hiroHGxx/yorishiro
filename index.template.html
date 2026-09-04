@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>よりしろ — 月蝕綺譚の御霊を、いまいる場所へ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="description" content="『月蝕綺譚 -Luna Occulta-』の御霊を、カメラごしに机の上へ小さく呼び出して写真に残す道具。14柱・しぐさ3つ。二次創作／公式とは関係ありません。">
+<meta name="theme-color" content="#131320">
+<meta property="og:type" content="website">
+<meta property="og:title" content="よりしろ — 月蝕綺譚の御霊を、いまいる場所へ">
+<meta property="og:description" content="カメラごしに、机の上へ御霊を小さく呼び出して写真に残す道具。14柱・しぐさ3つ。二次創作。">
+<meta property="og:image" content="https://hirohgxx.github.io/yorishiro/ogp.jpg">
+<meta property="og:url" content="https://hirohgxx.github.io/yorishiro/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://kura.vibe.co.jp" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{
+  --yoi:#131320; --yoi-hi:#1B1B2E;
+  --geppaku:#E8E4D8; --sub:#9D93B5;
+  --kin:#D9A94C; --kin-hi:#F0CE7E; --kin-ink:#1C1508;
+  --shokko:#E0562F; --moku:#6FB069;
+  --mincho:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+  --gothic:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--yoi); color:var(--geppaku);
+  font-family:var(--gothic); font-size:15px; line-height:1.7;
+  -webkit-text-size-adjust:100%; touch-action:manipulation; overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+#app{position:fixed; inset:0; display:flex; flex-direction:column; background:var(--yoi)}
+
+/* ── 場 ── */
+#ba{position:relative; flex:1 1 auto; min-height:0; overflow:hidden; background:var(--yoi)}
+#cam{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none}
+#cam.on{display:block}
+#yami{position:absolute; inset:0; background:radial-gradient(120% 78% at 50% 96%, #1B1B2E 0%, #131320 60%)}
+#yami.off{display:none}
+model-viewer{position:absolute; inset:0; width:100%; height:100%; background-color:transparent; --poster-color:transparent; outline:none}
+
+/* ── 場の上の札 ── */
+#kamae{position:absolute; left:12px; right:12px; top:calc(12px + env(safe-area-inset-top,0px));
+  display:flex; align-items:flex-start; justify-content:space-between; gap:10px; pointer-events:none}
+#nafuda{background:rgba(19,19,32,.70); border:1px solid rgba(217,169,76,.34); border-radius:5px;
+  padding:6px 11px 8px; max-width:14em; backdrop-filter:blur(6px)}
+#nafuda .n{font-family:var(--mincho); font-size:19px; font-weight:700; letter-spacing:.06em; line-height:1.25}
+#nafuda .t{font-size:12px; color:var(--kin); letter-spacing:.12em; margin-top:2px}
+.marui{pointer-events:auto; flex:0 0 auto; width:44px; height:44px; border-radius:5px;
+  background:rgba(19,19,32,.70); border:1px solid rgba(217,169,76,.34); color:var(--kin-hi);
+  font-size:17px; line-height:1; cursor:pointer; backdrop-filter:blur(6px)}
+.marui[aria-expanded="true"]{background:var(--kin-hi); color:var(--kin-ink); border-color:var(--kin-hi)}
+
+#shirase{position:absolute; left:50%; bottom:16px; transform:translateX(-50%);
+  background:rgba(19,19,32,.86); border:1px solid rgba(217,169,76,.34); border-radius:5px;
+  padding:8px 14px; font-size:13px; color:var(--geppaku); white-space:nowrap; max-width:92%;
+  overflow:hidden; text-overflow:ellipsis; pointer-events:none; opacity:0; transition:opacity .25s}
+#shirase.on{opacity:1}
+
+/* ── 帳 ── */
+#tobari{flex:0 0 auto; background:var(--yoi-hi); border-top:1px solid rgba(217,169,76,.32);
+  padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:9px}
+.retsu{display:flex; gap:8px; padding:0 12px}
+#hashira{gap:7px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding-bottom:2px}
+#hashira::-webkit-scrollbar{display:none}
+.fuda{flex:0 0 auto; cursor:pointer; background:var(--yoi); color:var(--geppaku);
+  border:1px solid rgba(157,147,181,.30); border-radius:5px; padding:6px 11px 7px; min-height:48px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; font-family:var(--gothic)}
+.fuda .n{font-family:var(--mincho); font-size:16px; font-weight:700; letter-spacing:.06em; white-space:nowrap}
+.fuda .k{font-size:12px; color:var(--sub); letter-spacing:.04em; white-space:nowrap}
+.fuda[aria-pressed="true"]{border-color:var(--kin-hi); background:#20203a}
+.fuda[aria-pressed="true"] .n{color:var(--kin-hi)}
+.oshi{cursor:pointer; border-radius:5px; min-height:48px; padding:0 13px; font-family:var(--gothic);
+  font-size:14px; font-weight:700; letter-spacing:.03em; display:flex; align-items:center;
+  justify-content:center; gap:6px; border:1px solid rgba(157,147,181,.30); background:var(--yoi); color:var(--geppaku)}
+.oshi.kin{background:var(--kin-hi); color:var(--kin-ink); border-color:var(--kin-hi)}
+.oshi.hiroi{flex:1 1 auto}
+.oshi[disabled]{opacity:.4; cursor:default}
+.oshi[aria-pressed="true"]{border-color:var(--kin-hi); color:var(--kin-hi)}
+.fuda:focus-visible,.oshi:focus-visible,.marui:focus-visible{outline:2px solid var(--kin-hi); outline-offset:2px}
+#take .ji{font-family:var(--mincho); font-size:16px; font-variant-numeric:tabular-nums}
+
+/* ── 手引き ── */
+#tebiki{position:absolute; left:12px; right:12px; top:calc(64px + env(safe-area-inset-top,0px)); bottom:12px;
+  background:rgba(19,19,32,.96); border:1px solid rgba(217,169,76,.34); border-radius:10px;
+  padding:15px 16px; overflow-y:auto; display:none; backdrop-filter:blur(10px)}
+#tebiki.on{display:block}
+#tebiki h2{font-family:var(--mincho); font-size:17px; font-weight:700; letter-spacing:.1em; margin:0 0 10px; color:var(--kin-hi)}
+#tebiki h3{font-family:var(--mincho); font-size:14px; font-weight:700; letter-spacing:.06em; margin:16px 0 5px; color:var(--kin)}
+#tebiki p,#tebiki li{font-size:13px; line-height:1.75; margin:0 0 7px; color:var(--geppaku)}
+#tebiki ol{margin:0; padding-left:1.3em}
+#tebiki .komakai{font-size:12px; color:var(--sub); line-height:1.7}
+#tebiki a{color:var(--kin); text-decoration:none; border-bottom:1px solid rgba(217,169,76,.4)}
+#tebiki footer{margin-top:16px; padding-top:12px; border-top:1px solid rgba(157,147,181,.18); font-size:12px; color:var(--sub); line-height:1.7}
+
+/* ── 撮った一枚 ── */
+#ichimai{position:absolute; inset:0; background:rgba(19,19,32,.97); display:none;
+  flex-direction:column; align-items:center; justify-content:center; gap:13px; padding:16px}
+#ichimai.on{display:flex}
+#ichimai img{max-width:100%; max-height:70%; border-radius:5px; border:1px solid rgba(217,169,76,.34)}
+#ichimai p{margin:0; font-size:13px; color:var(--sub); text-align:center; line-height:1.7}
+#ichimai .retsu{padding:0; width:100%; max-width:340px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="ba">
+    <video id="cam" playsinline autoplay muted></video>
+    <div id="yami"></div>
+    <model-viewer id="mv" alt="御霊の3Dモデル"
+      camera-controls touch-action="none" disable-tap interaction-prompt="none"
+      shadow-intensity="1.15" shadow-softness="0.7"
+      environment-image="neutral" exposure="1.05"
+      autoplay animation-name="idle"
+      camera-orbit="10deg 75deg 0.75m" field-of-view="28deg"
+      min-field-of-view="10deg" max-field-of-view="45deg"
+      ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed"></model-viewer>
+
+    <div id="kamae">
+      <div id="nafuda"><div class="n" id="na-n">栞</div><div class="t" id="na-t">道しるべの御霊</div></div>
+      <button class="marui" id="tebiki-btn" aria-expanded="false" aria-controls="tebiki" title="手引き">≡</button>
+    </div>
+
+    <div id="shirase" role="status"></div>
+
+    <div id="tebiki" role="region" aria-label="手引き">
+      <h2>よ り し ろ</h2>
+      <p>御霊が宿る器を「依代」といいます。この道具では、<strong>いまカメラが映している場所</strong>がその器になります。</p>
+      <h3>使い方</h3>
+      <ol>
+        <li><strong>カメラを許す</strong>を押す（端末が問いかけてきます）</li>
+        <li>机や棚にカメラを向ける</li>
+        <li>下の列から御霊を選ぶ（14柱）</li>
+        <li>指でなぞると向きが変わり、つまむと寄れます</li>
+        <li><strong>一枚撮る</strong>で写真に残せます</li>
+      </ol>
+      <h3>丈（たけ）</h3>
+      <p>置物の背丈を 15 / 20 / 30cm から選べます。<strong>この丈は「机に置く」（AR）でもそのまま使われます</strong>——端末のARは実寸で置くので、選んだ背丈のまま現れます。</p>
+      <h3>机に置く（AR）</h3>
+      <p class="komakai">iPhone / iPad は AR Quick Look、Android は Scene Viewer という<strong>端末に元から入っている機能</strong>へ渡します。そちらは平面を探して本当に床や机へ置けますが、この道具の画面ではなくなるので、しぐさの切り替えはできません。</p>
+      <h3>うまくいかないとき</h3>
+      <p class="komakai">カメラが始まらないときは、ブラウザの設定でこのサイトのカメラを「許可」にしてください。Safari なら アドレス欄の「ぁあ」→ Webサイトの設定 → カメラ。<br>
+      御霊が出てこないときは、素材蔵（<code>kura.vibe.co.jp</code>）に届いていません。通信を確かめてもう一度押してください。</p>
+      <footer>
+        『月蝕綺譚 -Luna Occulta-』(Studio VIBE / CryptoNinja 外伝) の<strong>二次創作</strong>です。<strong>公式とは関係ありません。</strong><br>
+        御霊の3Dモデルは素材蔵 <a href="https://kura.vibe.co.jp/" target="_blank" rel="noopener">kura.vibe.co.jp</a> から実行時に読み込んでいます（<strong>3Dフィギュア＝シャックさん作</strong>）。この道具は原本を1つも持ちません。<br>
+        <a href="https://vibe.co.jp/luna-occulta/fanworks" target="_blank" rel="noopener">二次創作ガイドライン</a>の範囲で制作。
+      </footer>
+    </div>
+
+    <div id="ichimai">
+      <img id="ichi-img" alt="撮った一枚">
+      <p id="ichi-ii">長押しして「写真に保存」を選ぶと、端末に残せます。</p>
+      <div class="retsu">
+        <button class="oshi kin hiroi" id="wakachi">保存・共有</button>
+        <button class="oshi hiroi" id="modoru">戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tobari">
+    <div class="retsu" id="hashira"></div>
+    <div class="retsu">
+      <button class="oshi hiroi" data-shigusa="idle" aria-pressed="true">佇む</button>
+      <button class="oshi hiroi" data-shigusa="bow">辞儀</button>
+      <button class="oshi hiroi" data-shigusa="nod">頷く</button>
+      <button class="oshi" id="take" title="置物の背丈"><span class="ji">20</span>cm</button>
+    </div>
+    <div class="retsu">
+      <button class="oshi kin hiroi" id="cam-btn">カメラを許す</button>
+      <button class="oshi" id="toru" disabled>一枚撮る</button>
+      <button class="oshi" id="ar-btn">机に置く</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">/*__MODEL_VIEWER__*/</script>
+<script>
+"use strict";
+/* ══ 御霊の名簿（公式MCP kitan-lore の list_assets(model3d) / list_spirits の写し） ══ */
+const MITAMA = [
+  {id:"shiori",     asset:"shiori_acbe7e71",     name:"栞",         kana:"しおり",       tag:"道しるべの御霊"},
+  {id:"anne",       asset:"anne_b4ffa1e6",       name:"餡音",       kana:"あんね",       tag:"伊賀・木"},
+  {id:"oto",        asset:"oto_67a89820",        name:"於兎",       kana:"おと",         tag:"甲賀・土"},
+  {id:"nemu",       asset:"nemu_1d0f9d24",       name:"ネム",       kana:"ねむ",         tag:"甲賀・水"},
+  {id:"emma",       asset:"emma_cb4b67e5",       name:"エマ",       kana:"えま",         tag:"甲賀・金"},
+  {id:"xiaolan",    asset:"xiaolan_0ace70d2",    name:"シャオラン", kana:"しゃおらん",   tag:"甲賀・土"},
+  {id:"karma",      asset:"karma_88df613d",      name:"カルマ",     kana:"かるま",       tag:"風魔・火"},
+  {id:"atoza",      asset:"atoza_6e8aa8a6",      name:"アトザ",     kana:"あとざ",       tag:"風魔・金"},
+  {id:"aun",        asset:"aun_4ca789d8",        name:"アウン",     kana:"あうん",       tag:"風魔・土"},
+  {id:"orochi",     asset:"orochi_d95b2dd4",     name:"オロチ",     kana:"おろち",       tag:"風魔・水"},
+  {id:"shiba",      asset:"shiba_6c21fb10",      name:"柴",         kana:"しば",         tag:"雑賀・水"},
+  {id:"sekishusai", asset:"sekishusai_d7c9805e", name:"石舟斎",     kana:"せきしゅうさい", tag:"伊賀・火"},
+  {id:"sasura",     asset:"sasura_1348441c",     name:"サスラ",     kana:"さすら",       tag:"根の国・金"},
+  {id:"tobari",     asset:"tobari_9b65e671",     name:"トバリ",     kana:"とばり",       tag:"根の国・水"},
+];
+const KURA = "https://kura.vibe.co.jp/model3d/";
+const MOTO_TAKE = 1.9;               // 素のモデルの背丈（14柱とも 1.885〜1.901m。実測）
+const TAKE = [15, 20, 30];           // 選べる丈（cm）
+
+const $ = s => document.querySelector(s);
+const mv = $("#mv"), cam = $("#cam"), yami = $("#yami");
+
+function tsugeru(s, nagai){
+  const e = $("#shirase");
+  e.textContent = s; e.classList.add("on");
+  clearTimeout(tsugeru.t);
+  tsugeru.t = setTimeout(() => e.classList.remove("on"), nagai || 2600);
+}
+function oboeru(k, v){ try{ localStorage.setItem("yorishiro." + k, v); }catch(e){} }
+function omoidasu(k){ try{ return localStorage.getItem("yorishiro." + k); }catch(e){ return null; } }
+
+/* ══ 丈を当てる ══
+   GLB の JSON 区画に、場面の根をまとめて包む「拡縮の節」を1つ足す。
+   骨（joint）も同じ節の下に入るので、皮つきのモデルでも丈が正しく効く。 */
+function takeWoAteru(buf, bairitsu){
+  const dv = new DataView(buf);
+  if(dv.getUint32(0, true) !== 0x46546C67) throw new Error("glTF ではありません");
+  const zentai = dv.getUint32(8, true);
+  let off = 12, jAt = 0, jLen = 0, bAt = 0, bLen = 0;
+  while(off + 8 <= zentai){
+    const len = dv.getUint32(off, true), rui = dv.getUint32(off + 4, true);
+    if(rui === 0x4E4F534A){ jAt = off + 8; jLen = len; }
+    else if(rui === 0x004E4942){ bAt = off + 8; bLen = len; }
+    off += 8 + len;
+  }
+  if(!jLen) throw new Error("JSON 区画がありません");
+  const j = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, jAt, jLen)));
+  const ba = j.scenes[j.scene || 0];
+  j.nodes.push({name:"yorishiro_take", scale:[bairitsu, bairitsu, bairitsu], children: ba.nodes.slice()});
+  ba.nodes = [j.nodes.length - 1];
+
+  const jb = new TextEncoder().encode(JSON.stringify(j));
+  const jPad = (4 - (jb.length % 4)) % 4;
+  const bPad = bLen ? (4 - (bLen % 4)) % 4 : 0;
+  const size = 12 + 8 + jb.length + jPad + (bLen ? 8 + bLen + bPad : 0);
+  const out = new ArrayBuffer(size), o = new DataView(out), u = new Uint8Array(out);
+  o.setUint32(0, 0x46546C67, true); o.setUint32(4, 2, true); o.setUint32(8, size, true);
+  o.setUint32(12, jb.length + jPad, true); o.setUint32(16, 0x4E4F534A, true);
+  u.set(jb, 20); u.fill(0x20, 20 + jb.length, 20 + jb.length + jPad);
+  if(bLen){
+    const at = 20 + jb.length + jPad;
+    o.setUint32(at, bLen + bPad, true); o.setUint32(at + 4, 0x004E4942, true);
+    u.set(new Uint8Array(buf, bAt, bLen), at + 8);
+  }
+  return out;
+}
+
+/* ══ 御霊を呼ぶ ══ */
+const kura = new Map();      // 素の GLB を控えておく（丈を変えても取り直さない）
+let ima = MITAMA[0], takeIdx = 1, urlIma = null;
+
+async function toriyoseru(m){
+  if(kura.has(m.id)) return kura.get(m.id);
+  const r = await fetch(KURA + m.asset + ".glb", {mode:"cors", cache:"force-cache"});
+  if(!r.ok) throw new Error("素材蔵が " + r.status + " を返しました");
+  const b = await r.arrayBuffer();
+  kura.set(m.id, b);
+  return b;
+}
+
+async function yobu(m, shizuka){
+  ima = m;
+  $("#na-n").textContent = m.name;
+  $("#na-t").textContent = m.tag;
+  document.querySelectorAll("#hashira .fuda").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === m.id)));
+  oboeru("mitama", m.id);
+  if(!shizuka) tsugeru(m.name + " を呼んでいます…", 8000);
+  try{
+    const moto = await toriyoseru(m);
+    const b = takeWoAteru(moto, (TAKE[takeIdx] / 100) / MOTO_TAKE);
+    if(urlIma) URL.revokeObjectURL(urlIma);
+    urlIma = URL.createObjectURL(new Blob([b], {type:"model/gltf-binary"}));
+    mv.src = urlIma;
+    mv.setAttribute("animation-name", "idle");
+    document.querySelectorAll("[data-shigusa]").forEach(b2 => {
+      const on = b2.dataset.shigusa === "idle";
+      b2.setAttribute("aria-pressed", String(on)); b2.classList.toggle("kin", on);
+    });
+    if(!shizuka) tsugeru(m.name + "・丈 " + TAKE[takeIdx] + "cm");
+  }catch(e){
+    tsugeru("呼べませんでした（" + e.message + "）", 5200);
+  }
+}
+
+const retsu = $("#hashira");
+MITAMA.forEach(m => {
+  const b = document.createElement("button");
+  b.className = "fuda"; b.dataset.id = m.id; b.type = "button";
+  b.setAttribute("aria-pressed", "false");
+  b.innerHTML = '<span class="n"></span><span class="k"></span>';
+  b.children[0].textContent = m.name; b.children[1].textContent = m.kana;
+  b.addEventListener("click", () => { yobu(m); b.scrollIntoView({block:"nearest", inline:"center", behavior:"smooth"}); });
+  retsu.appendChild(b);
+});
+
+/* ══ しぐさ ══ */
+document.querySelectorAll("[data-shigusa]").forEach(b => {
+  b.addEventListener("click", () => {
+    mv.setAttribute("animation-name", b.dataset.shigusa);
+    try{ mv.currentTime = 0; mv.play(); }catch(e){}
+    document.querySelectorAll("[data-shigusa]").forEach(x => {
+      const on = x === b; x.setAttribute("aria-pressed", String(on)); x.classList.toggle("kin", on);
+    });
+  });
+});
+
+/* ══ 丈 ══ */
+$("#take").addEventListener("click", () => {
+  takeIdx = (takeIdx + 1) % TAKE.length;
+  $("#take .ji").textContent = String(TAKE[takeIdx]);
+  oboeru("take", String(takeIdx));
+  yobu(ima, true);
+  tsugeru("丈 " + TAKE[takeIdx] + "cm");
+});
+
+/* ══ カメラ ══ */
+let nagare = null;
+$("#cam-btn").addEventListener("click", async () => {
+  const btn = $("#cam-btn");
+  if(nagare){
+    nagare.getTracks().forEach(t => t.stop()); nagare = null;
+    cam.classList.remove("on"); yami.classList.remove("off");
+    btn.textContent = "カメラを許す"; btn.classList.add("kin");
+    $("#toru").disabled = true;
+    return;
+  }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    tsugeru("この環境ではカメラを開けません（https で開いてください）", 5200); return;
+  }
+  btn.textContent = "問いかけ中…";
+  try{
+    nagare = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:"environment"}, width:{ideal:1920}, height:{ideal:1080}}, audio:false
+    });
+    cam.srcObject = nagare; await cam.play();
+    cam.classList.add("on"); yami.classList.add("off");
+    btn.textContent = "カメラを閉じる"; btn.classList.remove("kin");
+    $("#toru").disabled = false;
+    tsugeru("机や棚に向けてください");
+  }catch(e){
+    nagare = null; btn.textContent = "カメラを許す";
+    tsugeru(e.name === "NotAllowedError" ? "カメラが許されませんでした。ブラウザの設定から許可してください" : ("カメラを開けません：" + e.name), 5200);
+  }
+});
+
+/* ══ 机に置く（端末のAR） ══ */
+$("#ar-btn").addEventListener("click", async () => {
+  if(!mv.canActivateAR){ tsugeru("この端末では「机に置く」が使えません", 4000); return; }
+  try{ await mv.activateAR(); }
+  catch(e){ tsugeru("ARを開けません：" + e.name, 4000); }
+});
+
+/* ══ 一枚撮る ══ */
+let saigoNoHitomai = null;
+$("#toru").addEventListener("click", async () => {
+  const r = $("#ba").getBoundingClientRect();
+  const bai = Math.min(window.devicePixelRatio || 1, 2);
+  const W = Math.round(r.width * bai), H = Math.round(r.height * bai);
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  g.fillStyle = "#131320"; g.fillRect(0, 0, W, H);
+  try{
+    if(nagare && cam.videoWidth){
+      const k = Math.max(W / cam.videoWidth, H / cam.videoHeight);
+      const dw = cam.videoWidth * k, dh = cam.videoHeight * k;
+      g.drawImage(cam, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    }
+    const im = new Image();
+    await new Promise((res, rej) => { im.onload = res; im.onerror = rej; im.src = mv.toDataURL("image/png"); });
+    g.drawImage(im, 0, 0, W, H);
+    await new Promise(res => c.toBlob(b => { saigoNoHitomai = b; res(); }, "image/jpeg", 0.92));
+    $("#ichi-img").src = URL.createObjectURL(saigoNoHitomai);
+    $("#ichimai").classList.add("on");
+  }catch(e){ tsugeru("撮れませんでした：" + e.name, 4200); }
+});
+$("#modoru").addEventListener("click", () => $("#ichimai").classList.remove("on"));
+$("#wakachi").addEventListener("click", async () => {
+  if(!saigoNoHitomai) return;
+  const f = new File([saigoNoHitomai], "yorishiro-" + ima.id + ".jpg", {type:"image/jpeg"});
+  if(navigator.canShare && navigator.canShare({files:[f]})){
+    try{ await navigator.share({files:[f], title:"よりしろ"}); return; }catch(e){ if(e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(saigoNoHitomai); a.download = f.name;
+  document.body.appendChild(a); a.click(); a.remove();
+});
+
+/* ══ 手引き ══ */
+$("#tebiki-btn").addEventListener("click", () => {
+  const on = $("#tebiki").classList.toggle("on");
+  $("#tebiki-btn").setAttribute("aria-expanded", String(on));
+});
+
+/* ══ iOS のダブルタップ拡大・つまみ拡大を抑える ══ */
+document.addEventListener("gesturestart", e => e.preventDefault());
+let maeni = 0;
+document.addEventListener("touchend", e => {
+  const ima2 = Date.now();
+  if(ima2 - maeni < 320 && !e.target.closest("model-viewer")) e.preventDefault();
+  maeni = ima2;
+}, {passive:false});
+
+/* ══ 開幕 ══ */
+(function hiraku(){
+  const t = parseInt(omoidasu("take") || "1", 10);
+  if(t >= 0 && t < TAKE.length){ takeIdx = t; $("#take .ji").textContent = String(TAKE[t]); }
+  const id = omoidasu("mitama");
+  const m = MITAMA.find(x => x.id === id) || MITAMA[0];
+  customElements.whenDefined("model-viewer").then(() => yobu(m, true));
+  if(location.hash === "#tebiki") $("#tebiki-btn").click();
+})();
+</script>
+</body>
+</html>
