@@ -188,6 +188,10 @@ model-viewer{position:absolute; inset:0; width:100%; height:100%; background-col
       <p class="komakai"><strong>「カメラが他で使われています」と出たとき</strong>——iPhone は撮影の口をひとつしか開けません。この頁を開いた<strong>別のタブ</strong>や、カメラを使うアプリを閉じてから、もう一度押してください。<br>
       カメラが始まらないときは、ブラウザの設定でこのサイトのカメラを「許可」にしてください。Safari なら アドレス欄の「ぁあ」→ Webサイトの設定 → カメラ。<br>
       御霊が出てこないときは、素材蔵（<code>kura.vibe.co.jp</code>）に届いていません。通信を確かめてもう一度押してください。</p>
+      <h3>検め</h3>
+      <p class="komakai">版: <strong id="han">—</strong><br>
+      <span id="shirabe-cam">撮影の器: 調べ中</span><br>
+      <span id="shirabe-ima">いまの掴み: —</span></p>
       <footer>
         『月蝕綺譚 -Luna Occulta-』(Studio VIBE / CryptoNinja 外伝) の<strong>二次創作</strong>です。<strong>公式とは関係ありません。</strong><br>
         御霊の3Dモデルは素材蔵 <a href="https://kura.vibe.co.jp/" target="_blank" rel="noopener">kura.vibe.co.jp</a> から実行時に読み込んでいます（<strong>3Dフィギュア＝シャックさん作</strong>）。この道具は原本を1つも持ちません。<br>
@@ -549,6 +553,26 @@ document.addEventListener("touchend", e => {
   if(ima2 - maeni < 320 && !e.target.closest("model-viewer")) e.preventDefault();
   maeni = ima2;
 }, {passive:false});
+
+/* ══ 検め ══ */
+const HAN = "__BUILD__";
+$("#han").textContent = HAN;
+(async () => {
+  try{
+    const ds = await navigator.mediaDevices.enumerateDevices();
+    const v = ds.filter(d => d.kind === "videoinput");
+    $("#shirabe-cam").textContent = "撮影の器: videoinput " + v.length + "台"
+      + (v.length && v[0].label ? "（名前が見えている＝許し済み）" : "（名前は許し前だと空）");
+  }catch(e){ $("#shirabe-cam").textContent = "撮影の器: 数えられず（" + e.name + "）"; }
+})();
+setInterval(() => {
+  const t = nagare && nagare.getVideoTracks()[0];
+  $("#shirabe-ima").textContent = "いまの掴み: " + (t ? t.readyState + "（" + (t.label || "名前なし") + "）" : "なし");
+}, 1000);
+
+/* 頁が控えから戻ったとき（別の画面から帰ったとき）は、必ず立て直す。
+   釦が「問いかけ中…」のまま復元されると、押しても何も起きなくなる。 */
+window.addEventListener("pageshow", e => { if(e.persisted){ hanasu(); modosu = false; } });
 
 /* ══ 開幕 ══ */
 (function hiraku(){

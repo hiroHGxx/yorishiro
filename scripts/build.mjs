@@ -30,6 +30,16 @@ if(lib.includes('</script')) throw new Error('</script を含むのでインラ�
 
 const tpl = readFileSync(join(NE, 'index.template.html'), 'utf8');
 if(!tpl.includes('/*__MODEL_VIEWER__*/')) throw new Error('雛形に差し込み口がない');
-const out = tpl.replace('/*__MODEL_VIEWER__*/', () => `/* @google/model-viewer ${HAN} — Apache-2.0 — ${URL_} */\n${lib}`);
+let out = tpl.replace('/*__MODEL_VIEWER__*/', () => `/* @google/model-viewer ${HAN} — Apache-2.0 — ${URL_} */\n${lib}`);
+
+// 版の印: 焼いた日時 + git の短い印（端末に届いている版を、画面の ≡ で確かめられるように）
+const {execSync} = await import('node:child_process');
+let inshu = 'nogit';
+try{ inshu = execSync('git rev-parse --short HEAD', {cwd:NE}).toString().trim(); }catch(e){}
+const d = new Date();
+const z = n => String(n).padStart(2,'0');
+const shirushi = `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())} (${inshu})`;
+if(!out.includes('__BUILD__')) throw new Error('雛形に版の差し込み口がない');
+out = out.replace('__BUILD__', shirushi);
 writeFileSync(join(NE, 'index.html'), out);
-process.stdout.write(`焼けた: index.html ${(Buffer.byteLength(out)/1024).toFixed(0)}KB（model-viewer ${HAN} 同梱）\n`);
+process.stdout.write(`焼けた: index.html ${(Buffer.byteLength(out)/1024).toFixed(0)}KB（model-viewer ${HAN} 同梱・版 ${shirushi}）\n`);
