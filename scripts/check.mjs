@@ -1,6 +1,8 @@
 // 実物を測る: 丈が本当に効いているか・押し所・文字の床・読み込み
 import {createRequire} from 'node:module';
-const require_ = createRequire('/Users/USER/Documents/user/kitan-circle/kitan-works/shikifuda-kasane/');
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+const require_ = createRequire(new URL('../../shikifuda-kasane/', import.meta.url));
 const puppeteer = require_('puppeteer-core');
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const URL_ = process.argv[2] || 'https://hirohgxx.github.io/yorishiro/';
@@ -47,5 +49,5 @@ const d = await p.evaluate(async () => {
 });
 console.log(JSON.stringify(d, null, 1));
 console.log('赤い声:', warui.length ? warui : 'なし');
-await p.screenshot({path:'/private/tmp/claude-501/-Users-USER-Documents-user-kitan-circle/cc79b2f4-6dcf-4bbd-9cfe-7911569b5d91/scratchpad/yorishiro-live.png'});
+await p.screenshot({path:join(tmpdir(),'yorishiro-live.png')});
 await b.close();

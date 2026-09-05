@@ -8,7 +8,7 @@ import {createRequire} from 'node:module';
 import {mkdirSync, writeFileSync, readFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-const require_ = createRequire('/Users/USER/Documents/user/kitan-circle/kitan-works/shikifuda-kasane/');
+const require_ = createRequire(new URL('../../shikifuda-kasane/', import.meta.url));
 const puppeteer = require_('puppeteer-core');
 const NE = dirname(dirname(fileURLToPath(import.meta.url)));
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
